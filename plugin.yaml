@@ -1,0 +1,93 @@
+name: auth
+version: 0.1.0
+author: team
+description: "IAM centralisé — auth, users, RBAC, sessions, audit"
+execution_mode: trusted
+framework_version: "==2.0.0"
+entry_point: src/main.py
+
+requires: []
+
+permissions:
+  - resource: "auth.*"
+    actions: ["read", "write"]
+    effect: allow
+
+resources:
+  timeout_seconds: 15
+  max_memory_mb: 256
+  max_disk_mb: 100
+  rate_limit:
+    calls: 1000
+    period_seconds: 60
+
+runtime:
+  health_check:
+    enabled: true
+    interval_seconds: 30
+    timeout_seconds: 3
+  retry:
+    max_attempts: 1
+    backoff_seconds: 0.0
+
+envconfiguration:
+  inject: true
+  env_file: ./src/conf/.env.example
+
+
+env:
+  DATABASE_URL: ${DATABASE_URL}
+  JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+  JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+  JWT_ALGORITHM: ${JWT_ALGORITHM}
+  ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL}
+  REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+  GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+  GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+  MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+  MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+  REDIRECTION_URL: ${REDIRECTION_URL}
+  SMTP_HOST: ${SMTP_HOST}
+  SMTP_PORT: ${SMTP_PORT}
+  SMTP_USER: ${SMTP_USER}
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+  PWNED_CHECK_ENABLED: ${PWNED_CHECK_ENABLED}
+  APP_BASE_URL: ${APP_BASE_URL}
+
+allowed_imports:
+  - fastapi
+  - user
+  - uuid 
+  - base
+  - role 
+  - session 
+  - sqlalchemy 
+  - audit 
+  - sessions
+  - auth 
+  - oauth 
+  - deps
+  - rbac
+  - user
+  - common
+  - pydantic
+  - users
+  - token
+  - password
+  - security
+  - secrets
+  - argon2.*
+  - email.*
+  - mfa
+  - cryptography.*
+  - smtplib 
+  - io
+  - geoip2.*
+  - pyotp
+  - qrcode
+  - hmac
+  - ua_parser
+  - jose
