@@ -32,7 +32,7 @@ runtime:
 
 envconfiguration:
   inject: true
-  env_file: ./src/conf/.env.example
+  env_file: conf/.env.example
 
 
 env:
