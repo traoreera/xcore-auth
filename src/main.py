@@ -9,6 +9,38 @@ from .ipc import IpcHandler
 
 class Plugin(IpcHandler, TrustedBase):
 
+    def _xflow_integration_contract(self) -> dict:
+        return {
+            "plugin": "auth",
+            "display_name": "Auth",
+            "description": "Central IAM plugin for identity, permissions and user lookup.",
+            "xflow_supported": True,
+            "ipc_actions": [
+                {"name": "verify_token", "qualified_name": "auth.verify_token", "input_schema": {"token": "string"}},
+                {"name": "permission", "qualified_name": "auth.permission", "input_schema": {"user_id": "string(uuid)", "permission": "string"}},
+                {"name": "get_user", "qualified_name": "auth.get_user", "input_schema": {"user_id": "string(uuid)"}},
+                {"name": "register_user", "qualified_name": "auth.register_user", "input_schema": {"email": "email", "password": "string", "first_name": "string", "last_name": "string"}},
+                {"name": "forgot_password", "qualified_name": "auth.forgot_password", "input_schema": {"email": "email"}},
+                {"name": "reset_password", "qualified_name": "auth.reset_password", "input_schema": {"token": "string", "new_password": "string", "new_password_confirm": "string"}},
+                {"name": "verify_email", "qualified_name": "auth.verify_email", "input_schema": {"token": "string"}},
+                {"name": "list_user_sessions", "qualified_name": "auth.list_user_sessions", "input_schema": {"user_id": "string(uuid)", "current_session_id": "string(uuid)|optional"}},
+                {"name": "revoke_session", "qualified_name": "auth.revoke_session", "input_schema": {"session_id": "string(uuid)", "reason": "string|optional"}},
+                {"name": "revoke_all_sessions", "qualified_name": "auth.revoke_all_sessions", "input_schema": {"user_id": "string(uuid)", "except_session_id": "string(uuid)|optional"}},
+                {"name": "cleanup_sessions", "qualified_name": "auth.cleanup_sessions", "input_schema": {}}
+            ],
+            "events": {
+                "listens": ["auth.get.user.ids"],
+                "emits": ["auth.sessions.expired", "auth_user.loaded"]
+            },
+            "http_routes": [
+                {"path": "/xflow/integration", "methods": ["GET"]},
+                {"path": "/oauth/*", "methods": ["GET", "POST"]},
+                {"path": "/sessions/*", "methods": ["GET", "POST", "DELETE"]},
+                {"path": "/audit-logs/*", "methods": ["GET"]},
+                {"path": "/users/*", "methods": ["GET", "POST", "PATCH", "DELETE"]}
+            ]
+        }
+
     async def on_load(self):
         self.db    = self.get_service("db")
         self.cache = self.get_service("cache")
@@ -18,12 +50,19 @@ class Plugin(IpcHandler, TrustedBase):
         except:
             self.email = None 
         env = self.ctx.env
+        event = self.ctx.events
 
         # 1. Migrations automatiques au démarrage #TODO: xcore a du mal avec les migrations auto, à revoir
         #from xcore.services.database.migrations import MigrationRunner
         #await MigrationRunner(env["DATABASE_URL"], "./data/migrations").upgrade()
         
-        
+        @event.on("auth.get.user.ids")
+        async def users_ids(event):
+            from .repositories.user import UserRepository
+            async with self.db.session() as sess :
+                repo = UserRepository(sess)
+                rps = await repo.get_users_ids()
+            return rps
         from .models.base import Base
         async with self.db.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -59,7 +98,13 @@ class Plugin(IpcHandler, TrustedBase):
 
     def get_router(self) -> APIRouter:
         from .routes import build_router
-        return build_router(self.db, self.cache, self.ctx.env, self.email)
+        router = build_router(self.db, self.cache, self.ctx.env, self.email)
+
+        @router.get("/xflow/integration", tags=["xflow", "auth"])
+        async def xflow_integration():
+            return self._xflow_integration_contract()
+
+        return router
 
 
 

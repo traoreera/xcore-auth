@@ -9,6 +9,48 @@ entry_point: src/main.py
 requires: []
 
 permissions:
+  - resource: "db.*"
+    actions: ["read", "write", "delete"]
+    effect: allow
+  - resource: "cache.*"
+    actions: ["read", "write", "delete"]
+    effect: allow
+  - resource: "scheduler.*"
+    actions: ["read", "write", "delete"]
+    effect: allow
+  - resource: "auth.verify_token"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.permission"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.get_user"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.register_user"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.forgot_password"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.reset_password"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.verify_email"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.list_user_sessions"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.revoke_session"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.revoke_all_sessions"
+    actions: ["read", "write", "execute"]
+    effect: allow
+  - resource: "auth.cleanup_sessions"
+    actions: ["read", "write", "execute"]
+    effect: allow
   - resource: "auth.*"
     actions: ["read", "write"]
     effect: allow
