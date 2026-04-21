@@ -133,3 +133,11 @@ allowed_imports:
   - hmac
   - ua_parser
   - jose
+
+
+filesystem:
+  allowed_paths:
+    - data/
+  denied_paths:
+    - src/
+    - /

@@ -1,0 +1,117 @@
+{
+  "plugin": "auth",
+  "display_name": "Auth",
+  "description": "Central IAM plugin for identity, permissions and user lookup.",
+  "xflow_supported": true,
+  "ipc_actions": [
+    {
+      "name": "verify.user.token",
+      "qualified_name": "auth.verify.user.token",
+      "description": "Vérifie la validité d'un token JWT.",
+      "input_schema": {
+        "token": { "type": "string", "required": true }
+      },
+      "output_schema": {
+        "valid": { "type": "boolean" },
+        "user": { "type": "object" }
+      }
+    },
+    {
+      "name": "user.permission.verify",
+      "qualified_name": "auth.user.permission.verify",
+      "description": "Vérifie si un utilisateur possède une permission.",
+      "input_schema": {
+        "user_id": { "type": "string(uuid)", "required": true },
+        "permission": { "type": "string", "required": true }
+      },
+      "output_schema": {
+        "allowed": { "type": "boolean" }
+      }
+    },
+    {
+      "name": "search.user",
+      "qualified_name": "auth.search.user",
+      "description": "Récupère les détails d'un utilisateur.",
+      "input_schema": {
+        "user_id": { "type": "string(uuid)", "required": true }
+      },
+      "output_schema": {
+        "id": { "type": "string(uuid)" },
+        "email": { "type": "email" },
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "is_active": { "type": "boolean" },
+        "roles": { "type": "array" }
+      }
+    },
+    {
+      "name": "register_user",
+      "qualified_name": "auth.register_user",
+      "description": "Enregistre un nouvel utilisateur.",
+      "input_schema": {
+        "email": { "type": "email", "required": true },
+        "password": { "type": "string", "required": true },
+        "first_name": { "type": "string", "required": true },
+        "last_name": { "type": "string", "required": true }
+      }
+    },
+    {
+      "name": "user.forgot.password",
+      "qualified_name": "auth.user.forgot.password",
+      "description": "Initie la procédure de mot de passe oublié.",
+      "input_schema": {
+        "email": { "type": "email", "required": true }
+      }
+    },
+    {
+      "name": "verify.user.email",
+      "qualified_name": "auth.verify.user.email",
+      "description": "Vérifie l'email d'un utilisateur.",
+      "input_schema": {
+        "token": { "type": "string", "required": true }
+      }
+    },
+    {
+      "name": "list.user.sessions",
+      "qualified_name": "auth.list.user.sessions",
+      "description": "Liste les sessions actives d'un utilisateur.",
+      "input_schema": {
+        "user_id": { "type": "string(uuid)", "required": true },
+        "current_session_id": { "type": "string(uuid)", "required": false }
+      }
+    },
+    {
+      "name": "revoke.user.session",
+      "qualified_name": "auth.revoke.user.session",
+      "description": "Révoque une session spécifique.",
+      "input_schema": {
+        "session_id": { "type": "string(uuid)", "required": true },
+        "reason": { "type": "string", "required": false }
+      }
+    },
+    {
+      "name": "revoke.all.user.sessions",
+      "qualified_name": "auth.revoke.all.user.sessions",
+      "description": "Révoque toutes les sessions d'un utilisateur.",
+      "input_schema": {
+        "user_id": { "type": "string(uuid)", "required": true },
+        "except_session_id": { "type": "string(uuid)", "required": false }
+      }
+    },
+    {
+      "name": "cleanup_sessions",
+      "qualified_name": "auth.cleanup_sessions",
+      "description": "Nettoie les sessions expirées.",
+      "input_schema": {}
+    }
+  ],
+  "events": {
+    "listens": [
+      "auth.get.user.ids"
+    ],
+    "emits": [
+      "auth.sessions.expired",
+      "auth_user.loaded"
+    ]
+  }
+}
